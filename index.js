@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000; // Port to listen on
 const cors = require("cors");
@@ -22,37 +22,37 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-// async function run() {
-//   try {
-//     const userCollection = client.db("nodeMongoCrud").collection("users");
-//     const user = {
-//       name: "Rahim",
-//       email: "Rahim@gmail.com",
-//     };
-//     const result = await userCollection.insertOne(user);
-//     console.log(result);
-//   } catch (error) {
-//     console.log(error);
-//   } finally {
-//     app.listen(port, () => {
-//       console.log(`Server is running on port ${port}`);
-//     });
-//   }
-// }
-
 async function run() {
   try {
     // connecting db
     const userCollection = client.db("nodeMongoCrud").collection("users");
+    // read data from db
+    app.get("/users", async (req, res) => {
+      const query = {};
+      const cursor = userCollection.find(query);
+      const user = await cursor.toArray();
+      res.send(user);
+    });
 
+    // Create a new user
     app.post("/users", async (req, res) => {
       const user = req.body;
       console.log(user);
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
+
+    // Delete a user
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+      console.log("Trying to delte",id);
+    });
+
   } finally {
-    
   }
 }
 
